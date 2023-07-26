@@ -9,7 +9,7 @@ interface Props {
 
 const ActivityDetails = ({ activity, cancelSelectActivity }: Props) => {
   return (
-    <Card>
+    <Card style={{ width: "100%" }}>
       <Image src={`/assets/categoryImages/${activity.category}.jpg`} />
       <Card.Content>
         <Card.Header>{activity.title}</Card.Header>
@@ -19,7 +19,7 @@ const ActivityDetails = ({ activity, cancelSelectActivity }: Props) => {
         <Card.Description>{activity.description}</Card.Description>
       </Card.Content>
       <Card.Content extra>
-        <Button.Group widths={2}>
+        <Button.Group widths="2">
           <Button basic color="blue" content="Edit" />
           <Button
             basic

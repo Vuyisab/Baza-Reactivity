@@ -20,10 +20,10 @@ const ActivityDashboard = ({
 }: Props) => {
   return (
     <Grid>
-      <GridColumn width={"10"}>
+      <GridColumn width="10">
         <ActivityList activities={activities} selectActivity={selectActivity} />
       </GridColumn>
-      <GridColumn width={"6"}>
+      <GridColumn width="6">
         {selectedActivity && (
           <ActivityDetails
             activity={selectedActivity}
