@@ -5,21 +5,27 @@ import { Activity } from "../models/activity";
 import NavBar from "./NavBar";
 import ActivityDashboard from "../../features/activities/dashboard/ActivityDashboard";
 import { v4 as uuid } from "uuid";
+import agent from "../api/agent";
+import LoaderComponent from "./Loader";
 
 function App() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [selectedActivity, setselectedActivity] = useState<
     Activity | undefined
   >(undefined);
-
   const [editMode, setEditMode] = useState(false);
+  const [Loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios
-      .get<Activity[]>("http://localhost:5000/api/activities")
-      .then((response) => {
-        setActivities(response.data);
+    agent.Activities.list().then((response) => {
+      let activities: Activity[] = [];
+      response.forEach((activity) => {
+        activity.date = activity.date.split("T")[0];
+        activities.push(activity);
       });
+      setActivities(activities);
+      setLoading(false);
+    });
 
     return () => {};
   }, []);
@@ -51,6 +57,7 @@ function App() {
   const handleDeleteActivity = (id: string) =>
     setActivities([...activities.filter((x) => x.id !== id)]);
 
+  if (Loading) return <LoaderComponent content="Loading app" />;
   return (
     <Fragment>
       <NavBar openForm={handleFormOpen} />
