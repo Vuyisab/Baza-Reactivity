@@ -1,33 +1,49 @@
-import React, { useState, ChangeEvent } from "react";
+import React, { useState, ChangeEvent, useEffect } from "react";
 import { Button, Form, Segment } from "semantic-ui-react";
 import { useStore } from "../../../app/stores/store";
 import { observer } from "mobx-react-lite";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { Activity } from "../../../app/models/activity";
+import LoaderComponent from "../../../app/layout/Loader";
+import { v4 as uuid } from "uuid";
 
 const ActivityForm = () => {
   const { activityStore } = useStore();
   const {
-    selectedActivity,
-    closeForm,
     createActivity,
     updateActivity,
     loading,
+    loadActivity,
+    loadingInitial,
   } = activityStore;
 
-  const initialState = selectedActivity ?? {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [activity, setActivity] = useState<Activity>({
     id: "",
     title: "",
     description: "",
     category: "",
     city: "",
-    country: "",
     date: "",
     venue: "",
-  };
+  });
 
-  const [activity, setActivity] = useState(initialState);
+  useEffect(() => {
+    if (id) loadActivity(id).then((activity) => setActivity(activity!));
+  }, [id, loadActivity]);
 
   const handleSubmit = () => {
-    activity.id ? updateActivity(activity) : createActivity(activity);
+    if (!activity.id) {
+      activity.id = uuid();
+      createActivity(activity).then(() =>
+        navigate(`/activities/${activity.id}`)
+      );
+    } else {
+      updateActivity(activity).then(() =>
+        navigate(`/activities/${activity.id}`)
+      );
+    }
   };
 
   const handleInputChange = (
@@ -36,6 +52,8 @@ const ActivityForm = () => {
     const { name, value } = event?.target;
     setActivity({ ...activity, [name]: value });
   };
+
+  if (loadingInitial) return <LoaderComponent content="Loading activity..." />;
   return (
     <Segment clearing>
       <Form onSubmit={handleSubmit}>
@@ -84,10 +102,11 @@ const ActivityForm = () => {
           loading={loading}
         />
         <Button
+          as={Link}
+          to="/activities"
           floated="right"
           type="submit"
           content="Cancel"
-          onClick={closeForm}
         />
       </Form>
     </Segment>
