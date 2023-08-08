@@ -1,5 +1,4 @@
 import React, { Fragment, useEffect, useState } from "react";
-import axios from "axios";
 import { Container } from "semantic-ui-react";
 import { Activity } from "../models/activity";
 import NavBar from "./NavBar";
@@ -7,42 +6,21 @@ import ActivityDashboard from "../../features/activities/dashboard/ActivityDashb
 import { v4 as uuid } from "uuid";
 import agent from "../api/agent";
 import LoaderComponent from "./Loader";
+import { useStore } from "../stores/store";
+import { observer } from "mobx-react-lite";
 
 function App() {
+  const { activityStore } = useStore();
   const [activities, setActivities] = useState<Activity[]>([]);
   const [selectedActivity, setselectedActivity] = useState<
     Activity | undefined
   >(undefined);
   const [editMode, setEditMode] = useState(false);
-  const [Loading, setLoading] = useState(true);
   const [submitting, setsubmitting] = useState(false);
 
   useEffect(() => {
-    agent.Activities.list().then((response) => {
-      let activities: Activity[] = [];
-      response.forEach((activity) => {
-        activity.date = activity.date.split("T")[0];
-        activities.push(activity);
-      });
-      setActivities(activities);
-      setLoading(false);
-    });
-
-    return () => {};
-  }, []);
-
-  const handelSelectActivity = (id: string) => {
-    setselectedActivity(activities.find((a) => a.id === id));
-  };
-
-  const handleCancelSelectActivity = () => setselectedActivity(undefined);
-
-  const handleFormOpen = (id?: string) => {
-    id ? handelSelectActivity(id) : handleCancelSelectActivity();
-    setEditMode(true);
-  };
-
-  const handleFormClose = () => setEditMode(false);
+    activityStore.loadActivities();
+  }, [activityStore]);
 
   const handleCreateOrEditActivity = (activity: Activity) => {
     setsubmitting(true);
@@ -75,19 +53,14 @@ function App() {
     });
   };
 
-  if (Loading) return <LoaderComponent content="Loading app" />;
+  if (activityStore.loadingInitial)
+    return <LoaderComponent content="Loading app" />;
   return (
     <Fragment>
-      <NavBar openForm={handleFormOpen} />
+      <NavBar />
       <Container style={{ marginTop: "7em" }}>
         <ActivityDashboard
-          activities={activities}
-          selectedActivity={selectedActivity}
-          selectActivity={handelSelectActivity}
-          cancelSelectActivity={handleCancelSelectActivity}
-          editMode={editMode}
-          openForm={handleFormOpen}
-          closeForm={handleFormClose}
+          activities={activityStore.activities}
           createOrEditActivity={handleCreateOrEditActivity}
           deleteActivity={handleDeleteActivity}
           submitting={submitting}
@@ -97,4 +70,4 @@ function App() {
   );
 }
 
-export default App;
+export default observer(App);
