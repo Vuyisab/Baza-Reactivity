@@ -2,6 +2,7 @@ using Application.Activities;
 using Application.Core;
 using Application.Interfaces;
 using Application.Photos;
+using AutoMapper;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Infrastructure.Photos;
@@ -34,7 +35,12 @@ namespace API.Extensions
             });
 
             services.AddMediatR(typeof(Application.Activities.List.Handler));
-            services.AddAutoMapper(typeof(MappingProfiles).Assembly);
+            // services.AddAutoMapper(typeof(MappingProfiles).Assembly);
+            services.AddSingleton(provider => new MapperConfiguration(cfg =>
+            {
+                cfg.AddProfile(new MappingProfiles(provider.CreateScope().ServiceProvider.GetService<IUserAccessor>()));
+
+            }).CreateMapper());
             services.AddFluentValidationAutoValidation();
             services.AddValidatorsFromAssemblyContaining<Create>();
             services.AddHttpContextAccessor();
